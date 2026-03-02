@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ali'nin Oyun Portalı ve Araba Oyunu</title>
+<style>
+body { margin:0; font-family: Arial, sans-serif; background: linear-gradient(135deg,#4e73df,#1cc88a); color:white; text-align:center; scroll-behavior:smooth;}
+header { padding:50px 20px;}
+h1 { font-size:50px; margin-bottom:10px;}
+p { font-size:20px;}
+section { padding:50px 20px; min-height:400px; display:flex; justify-content:center; align-items:center; flex-direction:column; gap:15px;}
+.oyun-kutu { background: linear-gradient(135deg, #ff6a00, #ee0979); padding: 30px; border-radius: 20px; width: 300px; color: white; cursor: pointer; transition: 0.3s; }
+.oyun-kutu:hover { transform: scale(1.05); box-shadow:0 0 20px rgba(255,255,255,0.5);}
+button, input { font-size:16px; padding:10px; border-radius:8px; border:none; cursor:pointer; }
+button { background:white; color:#4e73df; font-weight:bold; transition:0.3s; }
+button:hover { transform:scale(1.1); background:#f8f9fc; }
+#clickerAlan { position:relative; width:300px; height:300px; border:2px dashed white; margin:20px auto; border-radius:15px; background-color: rgba(255,255,255,0.1); }
+#hareketliButon { position:absolute; transform:translate(-50%,-50%); }
+#confetti{position:fixed;top:0;left:0;pointer-events:none;z-index:999;}
+#arabaOyun{position:relative;width:100%;height:600px; background:#000; margin-top:50px;}
+#ui{position:absolute;top:10px;left:50%;transform:translateX(-50%);color:white;z-index:10;background:rgba(0,0,0,0.5);padding:10px 20px;border-radius:10px;text-align:center;}
+#controls{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:20px;z-index:10;}
+.ctrlBtn{width:90px;height:90px;background:rgba(255,255,255,0.5);border-radius:50%;font-size:40px;display:flex;align-items:center;justify-content:center;user-select:none;touch-action:none;}
+</style>
+</head>
+<body>
+
+<header>
+<h1>👋 Ali'nin Oyun Portalı</h1>
+<p>Eğlenceli oyunları keşfet!</p>
+</header>
+
+<!-- Oyun Portalı -->
+<section class="ana-sayfa">
+<h2>Oyun Seç</h2>
+<div class="oyun-kutu" onclick="oyunuAc('tahmin')">🎲 Sayı Tahmin</div>
+<div class="oyun-kutu" onclick="oyunuAc('tkm')">✂️ Taş-Kağıt-Makas</div>
+<div class="oyun-kutu" onclick="oyunuAc('clicker')">🖱️ Tıklama Oyunu</div>
+<div class="oyun-kutu" onclick="oyunuAc('quiz')">❓ Mini Quiz</div>
+</section>
+
+<!-- Tahmin Oyunu -->
+<section id="tahmin" style="display:none;">
+<h2>Sayı Tahmin Oyunu</h2>
+<p>1 ile 10 arasında bir sayı tahmin et!</p>
+<input type="number" id="tahminInput" min="1" max="10" placeholder="Tahminini gir">
+<button onclick="kontrolEt()">Tahmin Et</button>
+<p id="sonuc"></p>
+<button onclick="oyunaDon()">🏠 Ana Sayfaya Dön</button>
+</section>
+
+<!-- TKM -->
+<section id="tkm" style="display:none;">
+<h2>Taş-Kağıt-Makas</h2>
+<p id="bilgisayarSecim">💻 Bilgisayar: ?</p>
+<button onclick="tkmOyna('taş')">🪨 Taş</button>
+<button onclick="tkmOyna('kağıt')">📄 Kağıt</button>
+<button onclick="tkmOyna('makas')">✂️ Makas</button>
+<p id="tkmSonuc"></p>
+<button onclick="oyunaDon()">🏠 Ana Sayfaya Dön</button>
+</section>
+
+<!-- Clicker -->
+<section id="clicker" style="display:none;">
+<h2>Tıklama Oyunu</h2>
+<p>Butona tıkla ve puanını artır! 🎯</p>
+<div id="clickerAlan" onclick="puanSifirla(event)">
+<button id="hareketliButon" onclick="puanArttir(event)">Tıkla!</button>
+</div>
+<p>Puan: <span id="puan">0</span></p>
+<p>En yüksek puan: <span id="puanMax">0</span></p>
+<button onclick="oyunaDon()">🏠 Ana Sayfaya Dön</button>
+</section>
+
+<!-- Quiz -->
+<section id="quiz" style="display:none;">
+<h2>❓ Mini Quiz</h2>
+<div id="yasSoru">
+<p>Kaç yaşındasın?</p>
+<input type="number" id="yasInput" min="8" max="99" placeholder="Yaşını gir">
+<button onclick="baslaQuiz()">Başla</button>
+</div>
+<p id="soru"></p>
+<div id="cevaplar"></div>
+<p>Puan: <span id="puanQuiz">0</span></p>
+<p id="quizSonuc"></p>
+<button onclick="oyunaDon()">🏠 Ana Sayfaya Dön</button>
+</section>
+
+<!-- 3D Araba Oyunu -->
+<section id="arabaOyun">
+<div id="ui">
+Skor: <span id="score">0</span><br>
+Level: <span id="level">1</span><br>
+En Yüksek: <span id="hi">0</span><br>
+<button id="start">Başlat</button>
+<button id="reset">Reset</button>
+</div>
+<div id="controls">
+<div class="ctrlBtn" id="left">◀</div>
+<div class="ctrlBtn" id="right">▶</div>
+</div>
+</section>
+
+<canvas id="confetti"></canvas>
+<footer>
+© 2026 Ali | Tüm Hakları Saklıdır
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ---------------- GENEL ----------------
+function oyunuAc(id){
+    document.querySelectorAll('section[id]').forEach(s=>s.style.display='none');
+    document.getElementById(id).style.display='flex';
+}
+function oyunaDon(){
+    document.querySelectorAll('section[id]').forEach(s=>s.style.display='none');
+    document.querySelector('.ana-sayfa').style.display='flex';
+    resetOyunlar();
+}
+
+// ---------------- TAHMİN ----------------
+let rastgeleSayi=Math.floor(Math.random()*10)+1;
+function kontrolEt(){
+    const t=parseInt(document.getElementById('tahminInput').value);
+    const s=document.getElementById('sonuc');
+    if(t===rastgeleSayi){ s.textContent="🎉 Doğru!"; rastgeleSayi=Math.floor(Math.random()*10)+1; konfeti();}
+    else if(t<rastgeleSayi){ s.textContent="⬆️ Daha büyük"; }
+    else if(t>rastgeleSayi){ s.textContent="⬇️ Daha küçük"; }
+    else{s.textContent="❌ 1-10 arası gir";}
+}
+
+// ---------------- TKM ----------------
+let tkmAktif=true;
+function tkmOyna(secim){
+    if(!tkmAktif) return;
+    tkmAktif=false; setTimeout(()=>{tkmAktif=true;},3000);
+    const ops=['taş','kağıt','makas'];
+    const pc=ops[Math.floor(Math.random()*3)];
+    document.getElementById('bilgisayarSecim').textContent=`💻 Bilgisayar: ${pc.toUpperCase()}`;
+    let sonuc='';
+    if(secim===pc) sonuc="🤝 Berabere!";
+    else if((secim==='taş'&&pc==='makas')||(secim==='kağıt'&&pc==='taş')||(secim==='makas'&&pc==='kağıt')){ sonuc="🎉 Kazandın!"; konfeti();}
+    else sonuc="😢 Kaybettin!";
+    document.getElementById('tkmSonuc').textContent=sonuc;
+}
+
+// ---------------- CLICKER ----------------
+let puan=0, puanMax=0;
+function puanArttir(event){
+    event.stopPropagation();
+    puan++; if(puan>puanMax){ puanMax=puan; document.getElementById('puanMax').textContent=puanMax; konfeti(); }
+    document.getElementById('puan').textContent=puan;
+    const alan=document.getElementById('clickerAlan');
+    const b=document.getElementById('hareketliButon');
+    const maxX=alan.clientWidth-60; const maxY=alan.clientHeight-60;
+    b.style.left=Math.random()*maxX+'px'; b.style.top=Math.random()*maxY+'px';
+}
+function puanSifirla(event){
+    if(event.target.id!=='hareketliButon'){ puan=0; document.getElementById('puan').textContent=puan;}
+}
+
+// ---------------- QUIZ ----------------
+let yasDegeri=0, quizSorular=[], quizIndex=0, puanQuiz=0;
+const bankasi={kolay:[{q:"2+5=?",c:["6","7","8"],a:1}], orta:[{q:"Türkiye'nin başkenti?",c:["İstanbul","Ankara","İzmir"],a:1}], zor:[{q:"Işık kaçta kırılır?",c:["Farklı ortamda","Hep aynı","Sadece suda"],a:0}]};
+function baslaQuiz(){
+    yasDegeri=parseInt(document.getElementById('yasInput').value);
+    document.getElementById('yasSoru').style.display='none'; puanQuiz=0; document.getElementById('puanQuiz').textContent=puanQuiz;
+    if(yasDegeri<11) quizSorular=shuffle([...bankasi.kolay]);
+    else if(yasDegeri<=14) quizSorular=shuffle([...bankasi.orta]);
+    else quizSorular=shuffle([...bankasi.zor]);
+    quizIndex=0; quizGoster();
+}
+function quizGoster(){
+    if(quizIndex>=quizSorular.length){ quizIndex=0; quizSorular=shuffle(quizSorular);}
+    const s=quizSorular[quizIndex];
+    document.getElementById('soru').textContent=s.q;
+    const cvp=document.getElementById('cevaplar'); cvp.innerHTML='';
+    s.c.forEach((x,i)=>{ const btn=document.createElement('button'); btn.textContent=x; btn.onclick=()=>{
+        if(i===s.a){ document.getElementById('quizSonuc').textContent='🎉 Doğru!'; puanQuiz+=10; document.getElementById('puanQuiz').textContent=puanQuiz; konfeti(); quizIndex++; quizGoster();}
+        else { document.getElementById('quizSonuc').textContent='❌ Yanlış!'; quizIndex++; quizGoster();}
+    }; cvp.appendChild(btn);});
+}
+
+// ---------------- KONFETİ ----------------
+function konfeti(){
+    const canvas=document.getElementById('confetti'); const ctx=canvas.getContext('2d');
+    canvas.width=window.innerWidth; canvas.height=window.innerHeight;
+    const parca=[]; const renkler=['#ff0','#0ff','#f0f','#0f0','#f00','#00f','#fff'];
+    for(let i=0;i<150;i++){ parca.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height-100,r:Math.random()*6+4,d:Math.random()*20+10,color:renkler[Math.floor(Math.random()*renkler.length)],tilt:Math.random()*10-10});}
+    let angle=0;
+    function draw(){ ctx.clearRect(0,0,canvas.width,canvas.height); parca.forEach(p=>{ctx.beginPath();ctx.fillStyle=p.color;ctx.moveTo(p.x+p.tilt,p.y);ctx.lineTo(p.x+p.tilt+p.r/2,p.y+p.r);ctx.lineTo(p.x+p.tilt-p.r/2,p.y+p.r);ctx.closePath();ctx.fill();p.y+=Math.cos(angle+p.d)*2+1;p.x+=Math.sin(angle)*2;if(p.y>canvas.height)p.y=-10;}); angle+=0.01;}
+    const interval=setInterval(draw,20);
+    setTimeout(()=>{ clearInterval(interval); ctx.clearRect(0,0,canvas.width,canvas.height); },4000);
+}
+
+// ---------------- YARDIMCI ----------------
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a;}
+function resetOyunlar(){ puan=0; document.getElementById('puan').textContent=puan; }
+
+// ---------------- 3D ARABA OYUNU ----------------
+let scene, camera, renderer, player, ground;
+let cars=[], trees=[], explosions=[];
+let scoreA=0, highA=0, levelA=1;
+let isRunning=false;
+let moveLeft=false, moveRight=false;
+const ROAD_LIMIT=6;
+let PLAYER_SPEED=0.12;
+let CAR_SPEED=0.3;
+init();
+animate();
+function init(){
+scene=new THREE.Scene(); scene.background=new THREE.Color(0x000000); scene.fog=new THREE.Fog(0x000000,10,90);
+camera=new THREE.PerspectiveCamera(75,window.innerWidth/window.innerHeight,0.1,500); camera.position.set(0,5,12); camera.lookAt(0,0,0);
+renderer=new THREE.WebGLRenderer({antialias:true}); renderer.setSize(window.innerWidth,window.innerHeight); document.getElementById('arabaOyun').appendChild(renderer.domElement);
+const sun=new THREE.DirectionalLight(0xffffff,1); sun.position.set(10,15,10); scene.add(sun);
+const groundMat=new THREE.MeshStandardMaterial({color:0x555555}); ground=new THREE.Mesh(new THREE.PlaneGeometry(30,300),groundMat); ground.rotation.x=-Math.PI/2; ground.position.z=-150; scene.add(ground);
+player=createPlayer(); scene.add(player); spawnTrees();
+window.addEventListener('resize',onResize);
+document.getElementById("start").onclick=()=>{isRunning=true;document.getElementById("start").style.display='none';};
+document.getElementById("reset").onclick=resetGame;
+document.addEventListener("keydown",e=>{if(e.key==="a") moveLeft=true; if(e.key==="d") moveRight=true;});
+document.addEventListener("keyup",e=>{if(e.key==="a") moveLeft=false; if(e.key==="d") moveRight=false;});
+document.getElementById("left").addEventListener("touchstart",()=>moveLeft=true);
+document.getElementById("left").addEventListener("touchend",()=>moveLeft=false);
+document.getElementById("right").addEventListener("touchstart",()=>moveRight=true);
+document.getElementById("right").addEventListener("touchend",()=>moveRight=false);
+}
+function createPlayer(){const group=new THREE.Group(); const body=new THREE.Mesh(new THREE.BoxGeometry(1.2,0.5,2), new THREE.MeshStandardMaterial({color:0x00ccff})); body.position.y=0.25; group.add(body); const cabin=new THREE.Mesh(new THREE.BoxGeometry(0.8,0.4,1), new THREE.MeshStandardMaterial({color:0x0055ff})); cabin.position.y=0.45; cabin.position.z=-0.2; group.add(cabin); return group;}
+function spawnTrees(){const treeGeo=new THREE.ConeGeometry(0.6,2,8); const treeMat=new THREE.MeshStandardMaterial({color:0x228B22}); for(let i=-150;i<50;i+=10){let t1=new THREE.Mesh(treeGeo,treeMat); t1.position.set(ROAD_LIMIT+2,1,-i); scene.add(t1); trees.push(t1); let t2=t1.clone(); t2.position.x=-ROAD_LIMIT-2; scene.add(t2); trees.push(t2);}}
+function createCar(){const carGeo=new THREE.BoxGeometry(1+Math.random()*0.5,0.5,2+Math.random()); const carMat=new THREE.MeshStandardMaterial({color:Math.random()*0xffffff}); const car=new THREE.Mesh(carGeo,carMat); car.position.set((Math.random()-0.5)*ROAD_LIMIT*2,0.25,-100); scene.add(car); cars.push(car);}
+function checkCollision(a,b){const A=new THREE.Box3().setFromObject(a); const B=new THREE.Box3().setFromObject(b); return A.intersectsBox(B);}
+function blow(pos){for(let i=0;i<30;i++){const p=new THREE.Mesh(new THREE.SphereGeometry(0.1,4,4), new THREE.MeshStandardMaterial({color:0xff3300})); p.position.copy(pos); p.userData.vel=new THREE.Vector3((Math.random()-0.5)*0.5,Math.random()*0.5,(Math.random()-0.5)*0.5); scene.add(p); explosions.push(p);}}
+function resetGame(){scoreA=0; levelA=1; PLAYER_SPEED=0.12; CAR_SPEED=0.3; document.getElementById("score").innerText=scoreA; document.getElementById("level").innerText=levelA; cars.forEach(c=>scene.remove(c)); cars=[]; explosions.forEach(p=>scene.remove(p)); explosions=[]; player.position.x=0; isRunning=false; document.getElementById("start").style.display='inline-block';}
+function onResize(){renderer.setSize(window.innerWidth,window.innerHeight); camera.aspect=window.innerWidth/window.innerHeight; camera.updateProjectionMatrix();}
+function animate(){requestAnimationFrame(animate); if(isRunning && player){if(moveLeft) player.position.x-=PLAYER_SPEED; if(moveRight) player.position.x+=PLAYER_SPEED; player.position.x=Math.max(-ROAD_LIMIT,Math.min(ROAD_LIMIT,player.position.x)); ground.position.z+=PLAYER_SPEED; if(ground.position.z>150) ground.position.z=-150; trees.forEach(t=>{t.position.z+=PLAYER_SPEED;if(t.position.z>10) t.position.z-=200;}); if(Math.random()<0.03) createCar(); cars.forEach((c,i)=>{c.position.z+=CAR_SPEED; if(checkCollision(player,c)){blow(player.position); scoreA=0; document.getElementById("score").innerText=scoreA; cars.forEach(x=>scene.remove(x)); cars=[]; player.position.x=0;} if(c.position.z>10){scene.remove(c); cars.splice(i,1); scoreA++; document.getElementById("score").innerText=scoreA; if(scoreA%50===0){levelA++; PLAYER_SPEED+=0.02; CAR_SPEED+=0.05; document.getElementById("level").innerText=levelA;}}}); explosions.forEach((p,i)=>{p.position.add(p.userData.vel); p.userData.vel.y-=0.02; if(p.position.y<0){scene.remove(p); explosions.splice(i,1);}});} renderer.render(scene,camera);}
+</script>
+</body>
+</html>
